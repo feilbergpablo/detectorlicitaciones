@@ -1,162 +1,159 @@
-<style>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>INSUCOM</title>
+  <meta name="apple-mobile-web-app-title" content="INSUCOM">
+  <link rel="icon" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
     * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
     }
 
     body {
-        background: linear-gradient(135deg, #0f172a, #1e293b, #0b1120);
-        color: white;
-        min-height: 100vh;
-        padding: 20px;
+      margin: 0;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: white;
+      padding: 18px;
+      min-height: 100vh;
     }
 
-    .container {
-        width: 95%;
-        max-width: 1200px;
-        margin: auto;
-        padding: 20px;
+    .app {
+      width: 100%;
+      max-width: 900px;
+      margin: auto;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #22c55e;
+      color: #052e16;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-weight: bold;
+      margin-bottom: 14px;
     }
 
     h1 {
-        font-size: 3rem;
-        margin-bottom: 10px;
-        text-align: center;
+      font-size: 38px;
+      margin: 0 0 10px 0;
     }
 
     .subtitle {
-        text-align: center;
-        color: #cbd5e1;
-        margin-bottom: 30px;
-        font-size: 1.1rem;
-    }
-
-    .status-bar {
-        background: rgba(34, 197, 94, 0.15);
-        border: 1px solid rgba(34, 197, 94, 0.35);
-        color: #86efac;
-        padding: 12px;
-        border-radius: 14px;
-        text-align: center;
-        margin-bottom: 30px;
-        font-weight: bold;
+      color: #cbd5e1;
+      font-size: 18px;
+      margin-bottom: 24px;
     }
 
     .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
     }
 
     .card {
-        background: rgba(255, 255, 255, 0.08);
-        backdrop-filter: blur(12px);
-        border-radius: 18px;
-        padding: 24px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.35);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+      background: rgba(255,255,255,0.09);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 22px;
+      padding: 24px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
     }
 
     .card h2 {
-        margin-bottom: 12px;
-        font-size: 1.4rem;
+      margin-top: 0;
+      font-size: 25px;
     }
 
     .card p {
-        color: #d1d5db;
-        margin-bottom: 18px;
-        line-height: 1.5;
+      color: #cbd5e1;
+      font-size: 18px;
+      line-height: 1.5;
     }
 
-    .btn {
-        display: inline-block;
-        width: 100%;
-        text-align: center;
-        padding: 14px;
-        border-radius: 12px;
-        text-decoration: none;
-        color: white;
-        font-weight: bold;
-        font-size: 1rem;
-        transition: opacity 0.2s ease;
+    .button {
+      display: block;
+      margin-top: 16px;
+      padding: 17px;
+      text-align: center;
+      border-radius: 14px;
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+      font-size: 18px;
+      text-decoration: none;
     }
 
-    .btn:hover {
-        opacity: 0.9;
+    .green {
+      background: #16a34a;
     }
 
-    .btn-green {
-        background: linear-gradient(90deg, #22c55e, #16a34a);
+    .status {
+      color: #bbf7d0;
+      font-weight: bold;
+      font-size: 17px;
     }
 
-    .btn-blue {
-        background: linear-gradient(90deg, #3b82f6, #2563eb);
+    .footer {
+      margin-top: 25px;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 14px;
     }
 
-    footer {
-        margin-top: 40px;
-        text-align: center;
-        color: #94a3b8;
-        font-size: 0.9rem;
+    @media (min-width: 700px) {
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .full {
+        grid-column: span 2;
+      }
     }
+  </style>
+</head>
 
-    @media (max-width: 768px) {
-        body {
-            font-size: 18px;
-            padding: 12px;
-        }
+<body>
+  <div class="app">
 
-        h1 {
-            font-size: 2.4rem;
-            line-height: 1.1;
-        }
+    <div class="badge">🤖 Robot activo</div>
 
-        .subtitle {
-            font-size: 1.05rem;
-            margin-bottom: 24px;
-        }
+    <h1>Detector INSUCOM</h1>
 
-        .container {
-            width: 100%;
-            padding: 8px;
-        }
+    <p class="subtitle">
+      Panel automático para revisar licitaciones vinculadas a informática, librería e insumos.
+    </p>
 
-        .grid {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
+    <div class="grid">
 
-        .card {
-            padding: 22px;
-            border-radius: 20px;
-        }
+      <div class="card">
+        <h2>🆕 Nuevas licitaciones</h2>
+        <p>Revisá solamente las oportunidades nuevas detectadas por el robot diario.</p>
+        <a class="button green" href="nuevas_licitas.txt">Ver nuevas oportunidades</a>
+      </div>
 
-        .card h2 {
-            font-size: 1.5rem;
-        }
+      <div class="card">
+        <h2>📋 Resultados generales</h2>
+        <p>Listado completo con prioridad, puntaje, coincidencias y enlaces directos.</p>
+        <a class="button" href="resultados_insucom.txt">Ver análisis completo</a>
+      </div>
 
-        .card p {
-            font-size: 1.05rem;
-        }
+      <div class="card full">
+        <h2>⚙️ Estado del sistema</h2>
+        <p>El detector se ejecuta automáticamente todos los días.</p>
+        <div class="status">✅ Sistema online · GitHub Actions activo</div>
+      </div>
 
-        .btn {
-            font-size: 18px;
-            padding: 16px;
-            width: 100%;
-            border-radius: 14px;
-        }
+    </div>
 
-        .status-bar {
-            font-size: 1rem;
-            padding: 14px;
-        }
-    }
-</style>
+    <div class="footer">
+      INSUCOM Tender Watch · Versión móvil
+    </div>
+
+  </div>
+</body>
+</html>
