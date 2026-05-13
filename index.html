@@ -1,68 +1,180 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Detector INSUCOM</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>Detector INSUCOM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            padding: 20px;
-            color: #222;
-        }
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #f8fafc;
+      padding: 20px;
+    }
 
-        h1 {
-            color: #111;
-        }
+    .app {
+      max-width: 900px;
+      margin: auto;
+    }
 
-        a {
-            display: block;
-            background: #1f6feb;
-            color: white;
-            text-decoration: none;
-            padding: 14px;
-            border-radius: 8px;
-            margin-top: 10px;
-            text-align: center;
-            font-weight: bold;
-        }
+    .header {
+      margin-bottom: 25px;
+    }
 
-        .small {
-            color: #666;
-            font-size: 14px;
-        }
-    </style>
+    .badge {
+      display: inline-block;
+      background: #22c55e;
+      color: #052e16;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-weight: bold;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 34px;
+      margin: 0;
+    }
+
+    .subtitle {
+      color: #cbd5e1;
+      margin-top: 8px;
+      font-size: 16px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      backdrop-filter: blur(8px);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 24px;
+    }
+
+    .card p {
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    .button {
+      display: block;
+      margin-top: 18px;
+      padding: 15px;
+      text-align: center;
+      border-radius: 12px;
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+      text-decoration: none;
+      transition: 0.2s;
+    }
+
+    .button:hover {
+      background: #1d4ed8;
+    }
+
+    .button.green {
+      background: #16a34a;
+    }
+
+    .button.green:hover {
+      background: #15803d;
+    }
+
+    .status {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 12px;
+      color: #bbf7d0;
+      font-weight: bold;
+    }
+
+    .footer {
+      margin-top: 25px;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 13px;
+    }
+
+    @media (min-width: 700px) {
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .full {
+        grid-column: span 2;
+      }
+    }
+  </style>
 </head>
+
 <body>
+  <div class="app">
 
-    <h1>📄 Detector INSUCOM</h1>
+    <div class="header">
+      <div class="badge">🤖 Robot activo</div>
+      <h1>Detector INSUCOM</h1>
+      <p class="subtitle">
+        Panel automático para revisar licitaciones vinculadas a informática, librería e insumos.
+      </p>
+    </div>
 
-    <div class="card">
+    <div class="grid">
+
+      <div class="card">
         <h2>🆕 Nuevas licitaciones</h2>
-        <p class="small">Archivo generado por el robot diario.</p>
-        <a href="nuevas_licitas.txt">Ver nuevas licitaciones</a>
-    </div>
+        <p>
+          Revisá solamente las oportunidades nuevas detectadas por el robot diario.
+        </p>
+        <a class="button green" href="nuevas_licitas.txt">
+          Ver nuevas oportunidades
+        </a>
+      </div>
 
-    <div class="card">
+      <div class="card">
         <h2>📋 Resultados generales</h2>
-        <p class="small">Listado completo con puntajes y coincidencias.</p>
-        <a href="resultados_insucom.txt">Ver resultados completos</a>
+        <p>
+          Listado completo con prioridad, puntaje, coincidencias y enlaces directos.
+        </p>
+        <a class="button" href="resultados_insucom.txt">
+          Ver análisis completo
+        </a>
+      </div>
+
+      <div class="card full">
+        <h2>⚙️ Estado del sistema</h2>
+        <p>
+          El detector se ejecuta automáticamente todos los días y actualiza los archivos del panel.
+        </p>
+        <div class="status">
+          ✅ Sistema online · GitHub Actions activo
+        </div>
+      </div>
+
     </div>
 
-    <div class="card">
-        <h2>🤖 Estado</h2>
-        <p>El detector se ejecuta automáticamente todos los días.</p>
+    <div class="footer">
+      INSUCOM Tender Watch · Versión inicial
     </div>
 
+  </div>
 </body>
 </html>
