@@ -1,2 +1,110 @@
 NUEVAS LICITACIONES DETECTADAS
 
+Número: 14/1-0129-CDI20
+Expediente: EX-2020-26383085-   -APN-GASNYA#CNEA
+Nombre: ARTICULOS DE LIBRERIA
+Tipo: Contratación Directa
+Apertura: 10/06/2020 11:00 Hrs.
+Estado: Adjudicado
+Unidad: 14/1 - Centro Atómico Constituyentes - CNEA
+SAF: 105 - Comisión Nacional de Energía Atómica
+----------------------------------------------------------------------
+Número: 14/1-0218-CDI19
+Expediente: EX-2019-43988770-   -APN-GASNYA#CNEA
+Nombre: ARTICULOS DE LIBRERIA
+Tipo: Contratación Directa
+Apertura: 19/06/2019 10:00 Hrs.
+Estado: Dejado Sin Efecto
+Unidad: 14/1 - Centro Atómico Constituyentes - CNEA
+SAF: 105 - Comisión Nacional de Energía Atómica
+----------------------------------------------------------------------
+Número: 14/1-0249-CDI20
+Expediente: EX-2020-44904506-   -APN-GASNYA#CNEA
+Nombre: LIBRERIA
+Tipo: Contratación Directa
+Apertura: 25/08/2020 12:00 Hrs.
+Estado: Adjudicado
+Unidad: 14/1 - Centro Atómico Constituyentes - CNEA
+SAF: 105 - Comisión Nacional de Energía Atómica
+----------------------------------------------------------------------
+Número: 14/1-0527-CDI19
+Expediente: EX-2019-79784173-   -APN-GASNYA#CNEA
+Nombre: ELEMENTOS DE LIBRERIA
+Tipo: Contratación Directa
+Apertura: 27/09/2019 12:00 Hrs.
+Estado: Adjudicado
+Unidad: 14/1 - Centro Atómico Constituyentes - CNEA
+SAF: 105 - Comisión Nacional de Energía Atómica
+----------------------------------------------------------------------
+Número: 14/1-0740-CDI21
+Expediente: EX-2021-100822507-   -APN-GASNYA#CNEA
+Nombre: INSUMOS DE LIBRERIA
+Tipo: Contratación Directa
+Apertura: 23/03/2022 13:00 Hrs.
+Estado: Dejado Sin Efecto
+Unidad: 14/1 - Centro Atómico Constituyentes - CNEA
+SAF: 105 - Comisión Nacional de Energía Atómica
+----------------------------------------------------------------------
+Número: 14/2-0159-CDI24
+Expediente: EX-2024-75616956-   -APN-GAYF#CNEA
+Nombre: ADQUISICION DE ARTICULOS DE LIBRERIA GATR - GAPRYAR
+Tipo: Contratación Directa
+Apertura: 16/08/2024 10:00 Hrs.
+Estado: Adjudicado
+Unidad: 14/2 - Centro Atómico Ezeiza - CNEA
+SAF: 105 - Comisión Nacional de Energía Atómica
+----------------------------------------------------------------------
+Número: 14/3-0066-CDI18
+Expediente: EX-2018-26222536-   -APN-GAEN#CNEA
+Nombre: ARTICULOS DE LIBRERIA GAIyANN
+Tipo: Contratación Directa
+Apertura: 23/08/2018 10:00 Hrs.
+Estado: Adjudicado
+Unidad: 14/3 - Centro Atómico Bariloche - CNEA
+SAF: 105 - Comisión Nacional de Energía Atómica
+----------------------------------------------------------------------
+Número: 14/3-0074-CDI19
+Expediente: EX-2019-16649576-   -APN-GAEN#CNEA
+Nombre: LIBRERIA CTP
+Tipo: Contratación Directa
+Apertura: 30/04/2019 10:00 Hrs.
+Estado: Adjudicado
+Unidad: 14/3 - Centro Atómico Bariloche - CNEA
+SAF: 105 - Comisión Nacional de Energía Atómica
+----------------------------------------------------------------------
+Número: 14/3-0429-CDI24
+Expediente: EX-2024-142619329-   -APN-GAYF#CNEA
+Nombre: ARTICULOS DE LIBRERIA PARA COMPLEJO TECNOLOGICO PILCANIYEU
+Tipo: Contratación Directa
+Apertura: 19/02/2025 09:00 Hrs.
+Estado: Adjudicado con doc. contractuales autorizados
+Unidad: 14/3 - Centro Atómico Bariloche - CNEA
+SAF: 105 - Comisión Nacional de Energía Atómica
+----------------------------------------------------------------------
+Número: 14-0429-CDI18
+Expediente: EX-2018-53609523-   -APN-GAYF#CNEA
+Nombre: ADQUISICION DE ARTICULOS DE LIBRERIA
+Tipo: Contratación Directa
+Apertura: 03/12/2018 10:00 Hrs.
+Estado: Adjudicado
+Unidad: 14 - Compras y Contrataciones - CNEA
+SAF: 105 - Comisión Nacional de Energía Atómica
+----------------------------------------------------------------------
+Número: 1 2 3 4 5 6 7 8 9 10 ...
+Expediente: 1
+Nombre: 2
+Tipo: 3
+Apertura: 4
+Estado: 5
+Unidad: 6
+SAF: 7
+----------------------------------------------------------------------
+Número: 1
+Expediente: 2
+Nombre: 3
+Tipo: 4
+Apertura: 5
+Estado: 6
+Unidad: 7
+SAF: 8
+----------------------------------------------------------------------
