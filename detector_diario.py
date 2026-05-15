@@ -1,43 +1,50 @@
 import requests
 from bs4 import BeautifulSoup
 import os
+import unicodedata
 
-URL = "https://www.boletinoficial.gob.ar/seccion/tercera"
-HEADERS = {"User-Agent": "Mozilla/5.0"}
+URLS = [
+    "https://comprar.gob.ar/BuscarAvanzado.aspx",
+    "https://comprar.gob.ar/BuscarAvanzadoPublicacion.aspx",
+    "https://www.boletinoficial.gob.ar/seccion/tercera"
+]
 
-PUNTAJES = {
-    "impresor": 5,
-    "toner": 5,
-    "tóner": 5,
-    "cartuch": 5,
-    "fotocopiadora": 5,
-    "notebook": 5,
-
-    "resma": 4,
-    "librer": 4,
-    "útiles": 4,
-    "monitor": 4,
-    "hardware": 4,
-    "scanner": 4,
-
-    "papel": 2,
-    "hojas": 2,
-
-    "oficina": 1,
-    "insumos": 1
+HEADERS = {
+    "User-Agent": "Mozilla/5.0"
 }
+
+PALABRAS_CLAVE = [
+    "libreria", "librería",
+    "utiles", "útiles",
+    "papeleria", "papelería",
+    "resma", "resmas",
+    "papel", "hojas",
+    "oficina", "insumos",
+    "toner", "tóner",
+    "impresora", "impresoras",
+    "cartucho", "cartuchos",
+    "computacion", "computación",
+    "notebook", "scanner",
+    "elementos de libreria",
+    "articulos de libreria",
+    "útiles de oficina"
+]
 
 ARCHIVO_HISTORICO = "resultados_insucom.txt"
 ARCHIVO_NUEVOS = "nuevas_licitaciones.txt"
 
 
-def leer_detalle(link):
-    try:
-        r = requests.get(link, headers=HEADERS, timeout=8)
-        soup = BeautifulSoup(r.text, "html.parser")
-        return soup.get_text(" ", strip=True).lower()
-    except:
-        return ""
+def limpiar(texto):
+    texto = texto.lower()
+    return ''.join(
+        c for c in unicodedata.normalize("NFD", texto)
+        if unicodedata.category(c) != "Mn"
+    )
+
+
+def coincide(texto):
+    texto_limpio = limpiar(texto)
+    return any(limpiar(palabra) in texto_limpio for palabra in PALABRAS_CLAVE)
 
 
 def cargar_historico():
@@ -48,13 +55,47 @@ def cargar_historico():
         return set(archivo.readlines())
 
 
+def extraer_de_url(url):
+    resultados = []
+
+    try:
+        r = requests.get(url, headers=HEADERS, timeout=20)
+        soup = BeautifulSoup(r.text, "html.parser")
+
+        filas = soup.find_all("tr")
+
+        if filas:
+            for fila in filas:
+                texto = fila.get_text(" ", strip=True)
+                if texto and coincide(texto):
+                    resultados.append((texto, url))
+
+        links = soup.find_all("a")
+
+        for link in links:
+            texto = link.get_text(" ", strip=True)
+            href = link.get("href")
+
+            if texto and coincide(texto):
+                if href:
+                    if href.startswith("/"):
+                        if "boletinoficial" in url:
+                            href = "https://www.boletinoficial.gob.ar" + href
+                        else:
+                            href = "https://comprar.gob.ar" + href
+                else:
+                    href = url
+
+                resultados.append((texto, href))
+
+    except Exception as e:
+        resultados.append((f"ERROR leyendo {url}: {e}", url))
+
+    return resultados
+
+
 def main():
-
     historico = cargar_historico()
-
-    r = requests.get(URL, headers=HEADERS, timeout=10)
-    soup = BeautifulSoup(r.text, "html.parser")
-    links = soup.find_all("a")
 
     archivo_historico = open(ARCHIVO_HISTORICO, "w", encoding="utf-8")
     archivo_nuevos = open(ARCHIVO_NUEVOS, "w", encoding="utf-8")
@@ -62,78 +103,41 @@ def main():
     archivo_historico.write("RESULTADOS INSUCOM\n\n")
     archivo_nuevos.write("NUEVAS LICITACIONES DETECTADAS\n\n")
 
-    contador = 0
+    total_detectadas = 0
     nuevas_detectadas = 0
+    vistos = set()
 
-    for link in links:
+    for url in URLS:
+        resultados = extraer_de_url(url)
 
-        texto = link.get_text(strip=True)
-        href = link.get("href")
+        for texto, link in resultados:
+            clave = limpiar(texto + link)
 
-        if texto and "licit" in texto.lower():
-
-            if not href:
+            if clave in vistos:
                 continue
 
-            if href.startswith("/"):
-                href = "https://www.boletinoficial.gob.ar" + href
-
-            detalle = leer_detalle(href)
-
-            puntaje = 0
-            coincidencias = []
-
-            for palabra, puntos in PUNTAJES.items():
-
-                if palabra in detalle:
-                    puntaje += puntos
-                    coincidencias.append(palabra)
-
-            # BONUS
-            if "papel" in coincidencias and "resma" in coincidencias:
-                puntaje += 3
-
-            if "impresor" in coincidencias and "toner" in coincidencias:
-                puntaje += 4
-
-            if "librer" in coincidencias and "útiles" in coincidencias:
-                puntaje += 3
-
-            if puntaje >= 8:
-                prioridad = "Alta"
-            elif puntaje >= 4:
-                prioridad = "Media"
-            else:
-                prioridad = "Baja"
+            vistos.add(clave)
 
             registro = (
                 f"{texto}\n"
-                f"Prioridad: {prioridad}\n"
-                f"Puntaje: {puntaje}\n"
-                f"Coincidencias: {', '.join(coincidencias) if coincidencias else 'ninguna'}\n"
-                f"Link: {href}\n"
-                f"{'-'*40}\n"
+                f"Link/Fuente: {link}\n"
+                f"{'-' * 80}\n"
             )
 
             archivo_historico.write(registro)
 
-            es_nueva = texto + "\n" not in historico
-
-            if es_nueva:
+            if registro not in historico:
                 archivo_nuevos.write(registro)
                 nuevas_detectadas += 1
 
-            contador += 1
-
-            if contador >= 15:
-                break
+            total_detectadas += 1
 
     archivo_historico.close()
     archivo_nuevos.close()
 
     print("===================================")
     print("DETECTOR INSUCOM FINALIZADO")
-    print("Licitaciones analizadas:", contador)
+    print("Licitaciones detectadas:", total_detectadas)
     print("Nuevas detectadas:", nuevas_detectadas)
     print("Archivo generado:", ARCHIVO_NUEVOS)
     print("===================================")

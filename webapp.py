@@ -1,166 +1,87 @@
 from flask import Flask
-import requests
-from bs4 import BeautifulSoup
-import os
 
 app = Flask(__name__)
 
-URL = "https://www.boletinoficial.gob.ar/seccion/tercera"
-HEADERS = {"User-Agent": "Mozilla/5.0"}
-
-PUNTAJES = {
-    "impresor": 5,
-    "toner": 5,
-    "tóner": 5,
-    "cartuch": 5,
-    "fotocopiadora": 5,
-    "notebook": 5,
-
-    "resma": 4,
-    "librer": 4,
-    "útiles": 4,
-    "monitor": 4,
-    "hardware": 4,
-    "scanner": 4,
-
-    "papel": 2,
-    "hojas": 2,
-
-    "oficina": 1,
-    "insumos": 1
-}
-
-ARCHIVO_HISTORICO = "resultados_insucom.txt"
-ARCHIVO_NUEVOS = "nuevas_licitaciones.txt"
+ARCHIVO_RESULTADOS = "resultados_comprar.txt"
+ARCHIVO_NUEVAS = "nuevas_licitaciones.txt"
 
 
-def leer_detalle(link):
+def leer_archivo(nombre):
     try:
-        r = requests.get(link, headers=HEADERS, timeout=8)
-        soup = BeautifulSoup(r.text, "html.parser")
-        return soup.get_text(" ", strip=True).lower()
+        with open(nombre, "r", encoding="utf-8") as f:
+            return f.read()
     except:
-        return ""
-
-
-def cargar_historico():
-    if not os.path.exists(ARCHIVO_HISTORICO):
-        return set()
-
-    with open(ARCHIVO_HISTORICO, "r", encoding="utf-8") as archivo:
-        return set(archivo.readlines())
+        return "Sin datos disponibles."
 
 
 @app.route("/")
 def home():
 
-    try:
-        historico = cargar_historico()
+    nuevas = leer_archivo(ARCHIVO_NUEVAS)
 
-        r = requests.get(URL, headers=HEADERS, timeout=10)
-        soup = BeautifulSoup(r.text, "html.parser")
-        links = soup.find_all("a")
+    html = f"""
+    <html>
+    <head>
+        <title>Detector COMPR.AR PRO</title>
+    </head>
+    <body style="font-family: Arial; margin: 30px; background:#f4f4f4;">
+    
+        <h1>📄 Detector COMPR.AR PRO</h1>
 
-        archivo_historico = open(ARCHIVO_HISTORICO, "w", encoding="utf-8")
-        archivo_nuevos = open(ARCHIVO_NUEVOS, "w", encoding="utf-8")
+        <h2>🆕 Nuevas licitaciones detectadas</h2>
 
-        archivo_historico.write("RESULTADOS INSUCOM\n\n")
-        archivo_nuevos.write("NUEVAS LICITACIONES DETECTADAS\n\n")
+        <pre style="
+            white-space: pre-wrap;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border:1px solid #ccc;
+            font-size:16px;
+        ">{nuevas}</pre>
 
-        html = """
-        <h1>📄 Licitaciones - Sistema INSUCOM</h1>
-        <p>🆕 = nueva | ⭐ Alta | 🟡 Media | 📄 Baja</p>
-        <hr>
-        """
+        <p>
+            <a href="/resultados">
+                📊 Ver resultados generales / análisis completo
+            </a>
+        </p>
 
-        contador = 0
+    </body>
+    </html>
+    """
 
-        for link in links:
+    return html
 
-            texto = link.get_text(strip=True)
-            href = link.get("href")
 
-            if texto and "licit" in texto.lower():
+@app.route("/resultados")
+def resultados():
 
-                if not href:
-                    continue
+    datos = leer_archivo(ARCHIVO_RESULTADOS)
 
-                if href.startswith("/"):
-                    href = "https://www.boletinoficial.gob.ar" + href
+    return f"""
+    <html>
+    <head>
+        <title>Resultados generales COMPR.AR</title>
+    </head>
+    <body style="font-family: Arial; margin: 30px; background:#f4f4f4;">
 
-                detalle = leer_detalle(href)
+        <h1>📋 Resultados generales / Análisis completo COMPR.AR</h1>
 
-                puntaje = 0
-                coincidencias = []
+        <pre style="
+            white-space: pre-wrap;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border:1px solid #ccc;
+            font-size:16px;
+        ">{datos}</pre>
 
-                for palabra, puntos in PUNTAJES.items():
+        <p>
+            <a href="/">⬅ Volver</a>
+        </p>
 
-                    if palabra in detalle:
-                        puntaje += puntos
-                        coincidencias.append(palabra)
-
-                # BONUS
-                if "papel" in coincidencias and "resma" in coincidencias:
-                    puntaje += 3
-
-                if "impresor" in coincidencias and "toner" in coincidencias:
-                    puntaje += 4
-
-                if "librer" in coincidencias and "útiles" in coincidencias:
-                    puntaje += 3
-
-                if puntaje >= 8:
-                    icono = "⭐"
-                    prioridad = "Alta"
-                elif puntaje >= 4:
-                    icono = "🟡"
-                    prioridad = "Media"
-                else:
-                    icono = "📄"
-                    prioridad = "Baja"
-
-                registro = (
-                    f"{texto}\n"
-                    f"Prioridad: {prioridad}\n"
-                    f"Puntaje: {puntaje}\n"
-                    f"Coincidencias: {', '.join(coincidencias) if coincidencias else 'ninguna'}\n"
-                    f"Link: {href}\n"
-                    f"{'-'*40}\n"
-                )
-
-                archivo_historico.write(registro)
-
-                es_nueva = texto + "\n" not in historico
-
-                if es_nueva:
-                    archivo_nuevos.write(registro)
-                    icono_nuevo = "🆕 "
-                else:
-                    icono_nuevo = ""
-
-                html += f"""
-                <p>
-                    {icono_nuevo}{icono} <strong>{texto}</strong><br>
-                    Prioridad: {prioridad} | Puntaje: {puntaje}<br>
-                    Coincidencias: {", ".join(coincidencias) if coincidencias else "ninguna"}<br>
-                    <a href="{href}" target="_blank">🔗 Abrir licitación</a>
-                </p>
-                <hr>
-                """
-
-                contador += 1
-
-                if contador >= 15:
-                    break
-
-        archivo_historico.close()
-        archivo_nuevos.close()
-
-        return html
-
-    except Exception as e:
-
-        return f"<h1>⚠ Error</h1><p>{e}</p>"
+    </body>
+    </html>
+    """
 
 
 if __name__ == "__main__":
