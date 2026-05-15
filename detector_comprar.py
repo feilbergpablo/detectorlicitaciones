@@ -3,47 +3,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from bs4 import BeautifulSoup
-import os
 import time
 
-ARCHIVO_RESULTADOS = "resultados_comprar.html"
-ARCHIVO_NUEVAS = "nuevas_licitaciones.html"
-ARCHIVO_HISTORICO = "historico_comprar.txt"
-
-
-def leer_historico():
-    if not os.path.exists(ARCHIVO_HISTORICO):
-        return set()
-
-    with open(ARCHIVO_HISTORICO, "r", encoding="utf-8") as f:
-        return set(line.strip() for line in f if line.strip())
-
-
-def guardar_historico(ids):
-    with open(ARCHIVO_HISTORICO, "w", encoding="utf-8") as f:
-        for x in sorted(ids):
-            f.write(x + "\n")
-
-
-def inicio_html(titulo):
-    return f"""
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{titulo}</title>
-    </head>
-    <body style="font-family: Arial; background:#f4f4f4; padding:20px;">
-        <h1>{titulo}</h1>
-    """
-
-
-def fin_html():
-    return """
-    </body>
-    </html>
-    """
-
+ARCHIVO_TXT = "resultados_comprar.txt"
+ARCHIVO_HTML = "resultados_comprar.html"
 
 options = Options()
 options.add_argument("--start-maximized")
@@ -53,6 +16,7 @@ wait = WebDriverWait(driver, 40)
 
 driver.get("https://comprar.gob.ar/BuscarAvanzado.aspx")
 
+# Buscar libreria
 campo = wait.until(
     EC.presence_of_element_located((By.ID, "ctl00_CPH1_txtNombrePliego"))
 )
@@ -64,107 +28,126 @@ boton = wait.until(
     EC.element_to_be_clickable((By.ID, "ctl00_CPH1_btnListarPliegoAvanzado"))
 )
 
+driver.execute_script("arguments[0].scrollIntoView(true);", boton)
+time.sleep(1)
 boton.click()
 
 wait.until(
-    EC.presence_of_element_located((By.ID, "ctl00_CPH1_GridListaPliegos"))
+    EC.presence_of_element_located((By.ID, "ctl00_CPH1_lblCantidadListaPliegos"))
 )
 
-time.sleep(3)
+time.sleep(4)
 
-soup = BeautifulSoup(driver.page_source, "html.parser")
-driver.quit()
+# Más preciso: cada resultado suele estar en paneles con texto útil
+bloques = driver.find_elements(By.CSS_SELECTOR, "div.caja-resultados, div.panel, div.row")
 
-tabla = soup.find("table", id="ctl00_CPH1_GridListaPliegos")
+resultados_txt = "RESULTADOS COMPR.AR - SOLO OPORTUNIDADES VIGENTES\n\n"
 
-historico = leer_historico()
-nuevo_historico = set(historico)
+html = """
+<html>
+<head>
+<meta charset="UTF-8">
+<title>📋 Resultados generales COMPR.AR</title>
+</head>
+<body style="font-family: Arial; background:#f4f4f4; padding:20px;">
+<h1>📋 Resultados generales COMPR.AR</h1>
+"""
 
-resultados = []
-nuevas = []
+contador = 0
+vistos = set()
 
-if tabla:
+for bloque in bloques:
+    texto = bloque.text.strip()
 
-    filas = tabla.find_all("tr")[1:]
+    # Vacío
+    if not texto:
+        continue
 
-    for fila in filas:
+    # Basura paginación
+    if "1 2 3 4 5" in texto or "..." in texto and "Número:" in texto and len(texto) < 120:
+        continue
 
-        celdas = fila.find_all("td")
+    # Tiene que ser resultado real
+    if "Número:" not in texto:
+        continue
 
-        if len(celdas) >= 8:
+    # Evitar duplicados
+    if texto in vistos:
+        continue
 
-            numero = celdas[0].get_text(" ", strip=True)
-            expediente = celdas[1].get_text(" ", strip=True)
+    vistos.add(texto)
 
-            link_tag = celdas[2].find("a")
-            nombre = celdas[2].get_text(" ", strip=True)
+    # Excluir cerradas
+    if "Adjudicado" in texto or "Finalizado" in texto:
+        continue
 
-            link = ""
-            if link_tag and link_tag.get("href"):
-                href = link_tag.get("href")
+    # Buscar link real
+    link_real = ""
 
-                if href.startswith("/"):
-                    link = "https://comprar.gob.ar" + href
-                else:
-                    link = href
+    links = bloque.find_elements(By.TAG_NAME, "a")
 
-            tipo = celdas[3].get_text(" ", strip=True)
-            apertura = celdas[4].get_text(" ", strip=True)
-            estado = celdas[5].get_text(" ", strip=True)
-            unidad = celdas[6].get_text(" ", strip=True)
-            saf = celdas[7].get_text(" ", strip=True)
+    for l in links:
+        href = l.get_attribute("href")
 
-            if "adjudicado" in estado.lower():
-                continue
+        if not href:
+            continue
 
-            registro = f"""
-            <div style="background:white; padding:15px; margin-bottom:15px; border-radius:10px;">
-                <strong>Número:</strong> {numero}<br>
-                <strong>Expediente:</strong> {expediente}<br>
-                <strong>Nombre:</strong> {nombre}<br>
-                <strong>Tipo:</strong> {tipo}<br>
-                <strong>Apertura:</strong> {apertura}<br>
-                <strong>Estado:</strong> {estado}<br>
-                <strong>Unidad:</strong> {unidad}<br>
-                <strong>SAF:</strong> {saf}<br><br>
-                <a href="{link}" target="_blank" style="color:blue; font-weight:bold;">
-                    🔗 Abrir licitación
-                </a>
-            </div>
-            """
+        # Ignorar paginación javascript
+        if "javascript" in href.lower():
+            continue
 
-            resultados.append(registro)
+        # Link válido COMPR.AR
+        if "comprar.gob.ar" in href.lower():
+            link_real = href
+            break
 
-            if numero not in historico:
-                nuevas.append(registro)
+    # Si no encontró en el bloque, buscar dentro del HTML interno
+    if not link_real:
+        try:
+            html_interno = bloque.get_attribute("innerHTML")
+            import re
+            match = re.search(r'https://comprar\.gob\.ar[^"\']+', html_interno)
+            if match:
+                link_real = match.group(0)
+        except:
+            pass
 
-            nuevo_historico.add(numero)
+    resultados_txt += texto + "\n"
 
-with open(ARCHIVO_RESULTADOS, "w", encoding="utf-8") as f:
-    f.write(inicio_html("📋 Resultados generales COMPR.AR"))
+    if link_real:
+        resultados_txt += f"Link: {link_real}\n"
 
-    if resultados:
-        f.writelines(resultados)
-    else:
-        f.write("<p>No se encontraron oportunidades vigentes.</p>")
+    resultados_txt += "-" * 60 + "\n"
 
-    f.write(fin_html())
+    html += f"""
+    <div style="background:white; padding:15px; margin-bottom:15px; border-radius:10px;">
+        {texto.replace(chr(10), "<br>")}
+    """
 
-with open(ARCHIVO_NUEVAS, "w", encoding="utf-8") as f:
-    f.write(inicio_html("🆕 Nuevas licitaciones detectadas"))
+    if link_real:
+        html += f"""
+        <br><br>
+        <a href="{link_real}" target="_blank" style="color:blue; font-weight:bold; font-size:18px;">
+            🔗 Abrir licitación
+        </a>
+        """
 
-    if nuevas:
-        f.writelines(nuevas)
-    else:
-        f.write("<p>No hay nuevas licitaciones.</p>")
+    html += "</div>"
 
-    f.write(fin_html())
+    contador += 1
 
-guardar_historico(nuevo_historico)
+with open(ARCHIVO_TXT, "w", encoding="utf-8") as f:
+    f.write(resultados_txt)
+
+html += """
+</body>
+</html>
+"""
+
+with open(ARCHIVO_HTML, "w", encoding="utf-8") as f:
+    f.write(html)
 
 print("PROCESO TERMINADO")
-print("Total vigentes detectadas:", len(resultados))
-print("Nuevas:", len(nuevas))
-print("Archivos HTML generados:")
-print("-", ARCHIVO_RESULTADOS)
-print("-", ARCHIVO_NUEVAS)
+print("Total vigentes detectadas:", contador)
+
+driver.quit()
