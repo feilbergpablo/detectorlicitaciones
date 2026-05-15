@@ -7,8 +7,8 @@ from bs4 import BeautifulSoup
 import os
 import time
 
-ARCHIVO_RESULTADOS = "resultados_comprar.txt"
-ARCHIVO_NUEVAS = "nuevas_licitaciones.txt"
+ARCHIVO_RESULTADOS = "resultados_comprar.html"
+ARCHIVO_NUEVAS = "nuevas_licitaciones.html"
 ARCHIVO_HISTORICO = "historico_comprar.txt"
 
 
@@ -26,6 +26,25 @@ def guardar_historico(ids):
             f.write(x + "\n")
 
 
+def inicio_html(titulo):
+    return f"""
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{titulo}</title>
+    </head>
+    <body style="font-family: Arial; background:#f4f4f4; padding:20px;">
+        <h1>{titulo}</h1>
+    """
+
+
+def fin_html():
+    return """
+    </body>
+    </html>
+    """
+
+
 options = Options()
 options.add_argument("--start-maximized")
 
@@ -34,7 +53,6 @@ wait = WebDriverWait(driver, 40)
 
 driver.get("https://comprar.gob.ar/BuscarAvanzado.aspx")
 
-# Buscar palabra clave
 campo = wait.until(
     EC.presence_of_element_located((By.ID, "ctl00_CPH1_txtNombrePliego"))
 )
@@ -42,14 +60,12 @@ campo = wait.until(
 campo.clear()
 campo.send_keys("libreria")
 
-# Click en buscar
 boton = wait.until(
     EC.element_to_be_clickable((By.ID, "ctl00_CPH1_btnListarPliegoAvanzado"))
 )
 
 boton.click()
 
-# Esperar tabla real
 wait.until(
     EC.presence_of_element_located((By.ID, "ctl00_CPH1_GridListaPliegos"))
 )
@@ -57,7 +73,6 @@ wait.until(
 time.sleep(3)
 
 soup = BeautifulSoup(driver.page_source, "html.parser")
-
 driver.quit()
 
 tabla = soup.find("table", id="ctl00_CPH1_GridListaPliegos")
@@ -70,37 +85,53 @@ nuevas = []
 
 if tabla:
 
-    filas = tabla.find_all("tr")[1:]  # salta encabezado
+    filas = tabla.find_all("tr")[1:]
 
     for fila in filas:
 
-        celdas = [c.get_text(" ", strip=True) for c in fila.find_all("td")]
+        celdas = fila.find_all("td")
 
         if len(celdas) >= 8:
 
-            numero = celdas[0]
-            expediente = celdas[1]
-            nombre = celdas[2]
-            tipo = celdas[3]
-            apertura = celdas[4]
-            estado = celdas[5]
-            unidad = celdas[6]
-            saf = celdas[7]
+            numero = celdas[0].get_text(" ", strip=True)
+            expediente = celdas[1].get_text(" ", strip=True)
 
-            # FILTRO: excluir adjudicadas
+            link_tag = celdas[2].find("a")
+            nombre = celdas[2].get_text(" ", strip=True)
+
+            link = ""
+            if link_tag and link_tag.get("href"):
+                href = link_tag.get("href")
+
+                if href.startswith("/"):
+                    link = "https://comprar.gob.ar" + href
+                else:
+                    link = href
+
+            tipo = celdas[3].get_text(" ", strip=True)
+            apertura = celdas[4].get_text(" ", strip=True)
+            estado = celdas[5].get_text(" ", strip=True)
+            unidad = celdas[6].get_text(" ", strip=True)
+            saf = celdas[7].get_text(" ", strip=True)
+
             if "adjudicado" in estado.lower():
                 continue
 
-            registro = f"""Número: {numero}
-Expediente: {expediente}
-Nombre: {nombre}
-Tipo: {tipo}
-Apertura: {apertura}
-Estado: {estado}
-Unidad: {unidad}
-SAF: {saf}
-{"-" * 70}
-"""
+            registro = f"""
+            <div style="background:white; padding:15px; margin-bottom:15px; border-radius:10px;">
+                <strong>Número:</strong> {numero}<br>
+                <strong>Expediente:</strong> {expediente}<br>
+                <strong>Nombre:</strong> {nombre}<br>
+                <strong>Tipo:</strong> {tipo}<br>
+                <strong>Apertura:</strong> {apertura}<br>
+                <strong>Estado:</strong> {estado}<br>
+                <strong>Unidad:</strong> {unidad}<br>
+                <strong>SAF:</strong> {saf}<br><br>
+                <a href="{link}" target="_blank" style="color:blue; font-weight:bold;">
+                    🔗 Abrir licitación
+                </a>
+            </div>
+            """
 
             resultados.append(registro)
 
@@ -109,30 +140,31 @@ SAF: {saf}
 
             nuevo_historico.add(numero)
 
-# Guardar resultados generales
 with open(ARCHIVO_RESULTADOS, "w", encoding="utf-8") as f:
-    f.write("RESULTADOS COMPR.AR - SOLO OPORTUNIDADES VIGENTES\n\n")
+    f.write(inicio_html("📋 Resultados generales COMPR.AR"))
 
     if resultados:
         f.writelines(resultados)
     else:
-        f.write("No se encontraron oportunidades vigentes.\n")
+        f.write("<p>No se encontraron oportunidades vigentes.</p>")
 
-# Guardar nuevas
+    f.write(fin_html())
+
 with open(ARCHIVO_NUEVAS, "w", encoding="utf-8") as f:
-    f.write("NUEVAS LICITACIONES DETECTADAS\n\n")
+    f.write(inicio_html("🆕 Nuevas licitaciones detectadas"))
 
     if nuevas:
         f.writelines(nuevas)
     else:
-        f.write("No hay nuevas licitaciones.\n")
+        f.write("<p>No hay nuevas licitaciones.</p>")
 
-# Actualizar histórico
+    f.write(fin_html())
+
 guardar_historico(nuevo_historico)
 
 print("PROCESO TERMINADO")
 print("Total vigentes detectadas:", len(resultados))
 print("Nuevas:", len(nuevas))
-print("Archivos actualizados:")
+print("Archivos HTML generados:")
 print("-", ARCHIVO_RESULTADOS)
 print("-", ARCHIVO_NUEVAS)
